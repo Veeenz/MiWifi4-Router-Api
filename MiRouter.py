@@ -46,6 +46,12 @@ class MiRouter():
             return success(message="Wifi interfaces retrieved!", data=data)
                 
         return fail(message="There was an error while getting the Wifi details...", data=req.content)
+    
+    def get_qos_detail(self):
+        req = requests.get(self.endpoint_url + "/api/misystem/qos_info")
+        if(req.status_code == 200):
+            return success(message="QoS info retrieved!", data=req.json())
+        return fail(message="There was an error while getting the QoS details...", data=req.content)
 
     def set_wifi_status(self, wifi_index: int, status=0):
         """ Set the wifi status of a given interface to 0 or 1
@@ -79,7 +85,27 @@ class MiRouter():
             return success('Setting the status of WiFi to {}'.format(status), data=req.json())
         return fail('There was an error while setting the status of WiFi to {}'.format(status), data=req.content)
 
+    def set_qos_status(self, status=0):
+        if(status != 0 and status != 1):
+            return fail('Invalid status, send 0 for disable, 1 for enable')
+        req = requests.get(self.endpoint_url + '/api/misystem/qos_switch?on={}'.format(status))
+        if(req.status_code == 200):
+            return success('QoS status changed to {}'.format(status))
+        return fail('There was an error while setting the status of QoS to {}'.format(status))
 
+    def set_qos_band_limit(self, download=-1, upload=-1):
+        if(download < 0 and upload < 0):
+            return fail("Please send me valid download and/or upload")
+        payload = {"manual":1}
+        if(download >= 0):
+            payload['download'] = download
+        if(upload >= 0):
+            payload['upload'] = upload
+        req = requests.post(self.endpoint_url + "/api/misystem/set_band", payload)
+        if(req.status_code == 200 and req.json()['code'] == 0):
+            return success("QoS limits have been set!", data=req.json())
+        return fail("There was an error while setting the bandwidth")
+        
 
         
     
