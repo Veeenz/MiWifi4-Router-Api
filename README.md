@@ -24,3 +24,9 @@ If you want to turn your primary WLAN interface ON, you can just:
 | get_device_list  |  //  | Get the information about all devices connected  |
 | get_wifi_detail  |  //  | Getting all information about WIFI (List and other information)  |
 | set_wifi_status  | wifi_index: number, status = 0: number  | Enable or Disable the WIFI interface  |
+
+## TODO
+- Adding other endpoints
+- Pushing unittest
+
+In my plains there is an Angular web app cause the Mi Router application, which can be found in Apple Store or Play Store, isn't so good. If the network is slow, the app doens't load and it's not efficient.
