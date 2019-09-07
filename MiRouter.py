@@ -61,7 +61,7 @@ class MiRouter():
         if len(target_interface) > 0:
             target_interface = target_interface[0]
         else:
-            return fail('Target Wifi interface not found', data=req.content)
+            return fail('Target Wifi interface not found')
         payload = {
             'wifiIndex': target_interface['wifiIndex'],
             'on': status,
