@@ -1,6 +1,7 @@
 import hashlib
 import random
 import time
+import json
 
 KEY = "a2ffa5c9be07488bbb04a3a47d3c5f6a" #Stands for xiaoqiang
 
@@ -30,3 +31,10 @@ def fail(message, data=[]):
         'message': message,
         'data': data
     }
+
+def log(message, file=False, filename='log.json', mode='a+'): 
+    if(file):
+        with open(filename, mode) as target:
+            json.dump(message, target)
+    
+    print(message)
