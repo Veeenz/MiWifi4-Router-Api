@@ -1,33 +1,37 @@
 from util import get_random_mac, get_nonce, get_password_hash, success, fail
 import requests
 
-
-
 class MiRouter():
 
-    def __init__(self, gateway_url="http://miwifi.com"):
+    def __init__(self, gateway_url):
         self.mac_prefix = "e4:46:da"
-        self.login_token = ""
+        self.login_token = None
+        if not ('http://' in gateway_url or 'https://' in gateway_url):
+            gateway_url = 'http://' + gateway_url
         self.gateway_url = gateway_url
         self.random_mac_address = get_random_mac(self.mac_prefix)
         self.nonce = get_nonce(self.random_mac_address)
         self.endpoint_url = "{}/cgi-bin/luci/;stok={}/"
         
-    def login(self, psw):
+    def login(self, psw, user='admin'):
         
         url = "{}/cgi-bin/luci/api/xqsystem/login".format(self.gateway_url)
         req = requests.post(url, {
-            "username": "admin",
+            "username": user,
             "password": get_password_hash(self.nonce, psw),
             "logtype": 2,
             "nonce": self.nonce
         })
-        
-        if(req.status_code == 200):
-            self.login_token = req.json()['token']
+        response = req.json()
+        if(req.status_code == 200 and 'token' in response):
+            self.set_token(response['token'])
             self.endpoint_url = "{}/cgi-bin/luci/;stok={}/".format(self.gateway_url, self.login_token)
-            return success(message="Logged in!", data=req.json())
+            return success(message="Logged in!", data=response)
         return fail(message="There was an error while logging in...", data=req.content)
+
+    def set_token(self, token):
+        print('Setting up token {}'.format(token))
+        self.login_token = token
 
     def get_device_list(self):
         req = requests.get(self.endpoint_url + "/api/misystem/devicelist")

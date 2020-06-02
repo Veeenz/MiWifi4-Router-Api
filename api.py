@@ -4,14 +4,15 @@ from MiRouter import *
 import util
 import threading
 import storage
+from Exceptions import LoginError
 from Device import *
 
 global api
-api = MiRouter()
-api.login('adminadmin')
+api = MiRouter('192.168.31.1')
 app = Flask(__name__)
 CORS(app)
 POLLING_TIME = 4
+
 
 def get_data():
     while 1:
@@ -23,19 +24,20 @@ def get_data():
 
         time.sleep(POLLING_TIME)
 
-@app.route("/")
-def hello():
-    return "Hello, World!"
-
 @app.route("/login")
 def login():
     global api
-    api.login('adminadmin')
-    return jsonify({'success': True})
+    result = api.login('adminadmin')
+    
+    if(result['success']):
+        return success('Login successfully')
+    return fail('Login failed')
 
 @app.route("/details")
 def details():
     global api
+    if(api.login_token is None):
+        raise LoginError
     data = api.get_qos_detail()
     devices = data['data']['list']
     devs = []
@@ -44,10 +46,10 @@ def details():
         util.log(device, file=True, mode='w+')
         device_object = Device()
         device_object.from_response(device)
-        storage.save_device_detail(device_object)
+        """storage.save_device_detail(device_object)
         stored_device = storage.get_by("mac", device_object.mac)
                 
-        device_object.details = stored_device['data']['details']
+        device_object.details = stored_device['data']['details']"""
             
         devs.append(device_object.to_dict())
     devs = sorted(devs, reverse = True, key = lambda i: (i['statistics']['downspeed'])) 
@@ -55,6 +57,10 @@ def details():
 
 @app.route("/details/<mac>")
 def detail(mac):
+    global api
+    if(api.login_token is None):
+        raise LoginError
     device = storage.get_by("mac", mac)
     return jsonify(device)
-app.run(debug=True)
+
+app.run(debug=True, host='0.0.0.0')

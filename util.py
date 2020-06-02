@@ -3,6 +3,8 @@ import random
 import time
 import json
 
+from Exceptions import *
+
 KEY = "a2ffa5c9be07488bbb04a3a47d3c5f6a" #Stands for xiaoqiang
 
 def sha1(string):
